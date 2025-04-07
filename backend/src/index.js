@@ -5,13 +5,15 @@ const sequelize = require("./config/database");
 
 const authRoutes = require("./routes/auth.routes");
 const transactionRoutes = require("./routes/transaction.routes");
+const userRoutes = require("./routes/user.routes");
 
 const app = express(); // Inicialize o app antes de usá-lo
 
 app.use(cors());
 app.use(express.json());
 
-app.use(transactionRoutes); // Use as rotas após inicializar o app
+app.use(transactionRoutes); 
+app.use(userRoutes);// Use as rotas após inicializar o app
 app.use(authRoutes); // rotas de login e registro
 
 const PORT = process.env.PORT || 3333;
