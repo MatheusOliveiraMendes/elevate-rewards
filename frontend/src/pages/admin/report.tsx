@@ -24,7 +24,7 @@ export default function ReportPage() {
   const fetchReport = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3001/api/admin/report', {
+      const response = await axios.get<Transaction[]>('http://localhost:3001/api/admin/report', {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           cpf: cpf || undefined,
