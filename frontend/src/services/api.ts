@@ -1,15 +1,16 @@
-import axios from "axios";
+import axios from 'axios';
 
 const api = axios.create({
-  baseURL: "http://localhost:3333", // Base URL for API requests.
+  baseURL: 'http://localhost:3001/api',
 });
 
+// Intercepta todas as requisições para adicionar o token se existir
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token"); // Retrieves token from localStorage.
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`; // Adds token to Authorization header.
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-export default api; // Exports the configured Axios instance.
+export default api;

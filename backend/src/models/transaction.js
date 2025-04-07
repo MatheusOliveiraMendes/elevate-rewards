@@ -1,7 +1,8 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const User = require('./User');
 
-const Transaction = sequelize.define("Transaction", {
+const Transaction = sequelize.define('Transaction', {
   cpf: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -18,14 +19,17 @@ const Transaction = sequelize.define("Transaction", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  value: {
+  amount: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
   },
   status: {
-    type: DataTypes.ENUM("Aprovado", "Reprovado", "Em avaliação"),
-    allowNull: false,
+    type: DataTypes.ENUM('Aprovado', 'Reprovado', 'Em avaliação'),
+    defaultValue: 'Em avaliação',
   },
 });
 
-module.exports = { Transaction };
+Transaction.belongsTo(User);
+User.hasMany(Transaction);
+
+module.exports = Transaction;
