@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import withAuth from '../../components/withAuth';
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import '../globals.css';
 
 interface JwtPayload {
   id: string;

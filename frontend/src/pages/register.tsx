@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import './globals.css';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');

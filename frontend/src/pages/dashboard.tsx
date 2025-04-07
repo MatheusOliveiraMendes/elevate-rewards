@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 import withAuth from '../components/withAuth';
 import { jwtDecode }from 'jwt-decode';
-import './globals.css';
 
 
 interface Transaction {

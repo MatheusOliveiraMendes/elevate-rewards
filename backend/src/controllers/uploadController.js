@@ -1,5 +1,4 @@
 const xlsx = require('xlsx');
-const path = require('path');
 const fs = require('fs');
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
@@ -8,7 +7,10 @@ exports.uploadSheet = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'Nenhum arquivo enviado.' });
 
-    const filePath = path.resolve(__dirname, '../uploads', req.file.filename);
+    const filePath = req.file.path;
+    console.log('🧾 Arquivo recebido:', req.file);
+    console.log('📍 Caminho salvo:', filePath);
+
     const workbook = xlsx.readFile(filePath);
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const data = xlsx.utils.sheet_to_json(sheet);
@@ -16,8 +18,14 @@ exports.uploadSheet = async (req, res) => {
     const entries = [];
 
     for (const row of data) {
-      const user = await User.findOne({ where: { email: row.CPF } }); // Pode ajustar se for `cpf`
-      if (!user) continue;
+      console.log('📄 Linha da planilha:', row);
+
+      // Usando email como CPF, pois coluna "cpf" não existe no banco
+      const user = await User.findOne({ where: { email: row.CPF } });
+      if (!user) {
+        console.log(`⚠️ Usuário não encontrado para CPF/email: ${row.CPF}`);
+        continue;
+      }
 
       entries.push({
         cpf: row.CPF,
@@ -30,8 +38,8 @@ exports.uploadSheet = async (req, res) => {
       });
     }
 
+    console.log('✅ Transações para inserir:', entries.length);
     await Transaction.bulkCreate(entries);
-    fs.unlinkSync(filePath);
     res.json({ message: 'Transações importadas com sucesso.' });
   } catch (err) {
     console.error(err);

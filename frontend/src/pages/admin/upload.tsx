@@ -1,5 +1,3 @@
-// frontend/pages/admin/upload.tsx
-
 import { useState } from 'react';
 import axios from 'axios';
 import withAuth from '../../components/withAuth';
