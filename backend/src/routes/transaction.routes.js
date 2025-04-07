@@ -1,6 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const { uploadTransactions, getTransactions } = require("../controllers/transaction.controller");
+const authenticateToken = require("../middlewares/auth");
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-router.post("/transactions/upload", upload.single("file"), uploadTransactions);
-router.get("/transactions", getTransactions);
+router.get("/transactions", authenticateToken, getTransactions);
+router.post("/transactions/upload", authenticateToken, upload.single("file"), uploadTransactions);
 
 module.exports = router;

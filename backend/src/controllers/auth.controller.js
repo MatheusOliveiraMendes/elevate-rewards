@@ -24,10 +24,13 @@ module.exports = {
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ error: 'Incorrect password' });
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: '1d',
-    });
-
+    // No login
+    const token = jwt.sign(
+      { id: user.id, email: user.email, cpf: user.cpf },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    
     return res.json({ user: { id: user.id, name: user.name }, token });
   },
 };
