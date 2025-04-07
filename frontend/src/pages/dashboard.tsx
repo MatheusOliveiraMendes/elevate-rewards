@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import withAuth from '../components/withAuth';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import withAuth from '../components/withAuth';
+import { jwtDecode }from 'jwt-decode';
 import './globals.css';
+
 
 interface Transaction {
   id: number;
@@ -13,17 +15,28 @@ interface Transaction {
   status: string;
 }
 
+interface JwtPayload {
+  id: string;
+  role: 'admin' | 'user';
+}
+
 function DashboardPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [userRole, setUserRole] = useState<'admin' | 'user' | null>(null);
+  const [error, setError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decoded = jwtDecode<JwtPayload>(token);
+      setUserRole(decoded.role);
+    }
+
     const fetchTransactions = async () => {
-      setLoading(true);
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get<Transaction[]>('http://localhost:3001/api/transactions/user', {
@@ -37,8 +50,6 @@ function DashboardPage() {
         setTransactions(response.data);
       } catch (err) {
         console.error('Erro ao buscar transações:', err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchTransactions();
@@ -49,86 +60,85 @@ function DashboardPage() {
     router.push('/login');
   };
 
+  const handleAdminPanel = () => {
+    if (userRole === 'admin') {
+      router.push('/admin/dashboard');
+    } else {
+      setError('Você não tem permissão de administrador.');
+    }
+  };
+
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Extrato de Transações</h1>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-        >
-          Sair
-        </button>
-      </div>
-
-      <div className="bg-white p-4 rounded shadow-md mb-6">
-        <div className="flex flex-wrap gap-4">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="border px-3 py-2 rounded w-full sm:w-auto"
+        <div className="flex gap-2">
+          <button
+            onClick={handleAdminPanel}
+            className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800"
           >
-            <option value="">Todos</option>
-            <option value="Aprovado">Aprovado</option>
-            <option value="Reprovado">Reprovado</option>
-            <option value="Em avaliação">Em avaliação</option>
-          </select>
-
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="border px-3 py-2 rounded w-full sm:w-auto"
-          />
-
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="border px-3 py-2 rounded w-full sm:w-auto"
-          />
+            Painel do Administrador
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          >
+            Sair
+          </button>
         </div>
       </div>
 
-      {loading ? (
-        <div className="text-center py-6">Carregando transações...</div>
-      ) : (
-        <table className="w-full border text-sm">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="p-2 border">Descrição</th>
-              <th className="p-2 border">Data</th>
-              <th className="p-2 border">Pontos</th>
-              <th className="p-2 border">Valor</th>
-              <th className="p-2 border">Status</th>
+      {error && <p className="text-red-600 mb-4">{error}</p>}
+
+      <div className="flex gap-4 mb-6">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border px-3 py-2 rounded"
+        >
+          <option value="">Todos</option>
+          <option value="Aprovado">Aprovado</option>
+          <option value="Reprovado">Reprovado</option>
+          <option value="Em avaliação">Em avaliação</option>
+        </select>
+
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border px-3 py-2 rounded"
+        />
+
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="border px-3 py-2 rounded"
+        />
+      </div>
+
+      <table className="w-full border">
+        <thead>
+          <tr className="bg-gray-100 text-left">
+            <th className="p-2 border">Descrição</th>
+            <th className="p-2 border">Data</th>
+            <th className="p-2 border">Pontos</th>
+            <th className="p-2 border">Valor</th>
+            <th className="p-2 border">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {transactions.map((t) => (
+            <tr key={t.id}>
+              <td className="p-2 border">{t.description}</td>
+              <td className="p-2 border">{new Date(t.transactionDate).toLocaleDateString()}</td>
+              <td className="p-2 border">{t.points}</td>
+              <td className="p-2 border">R$ {t.amount.toFixed(2)}</td>
+              <td className="p-2 border">{t.status}</td>
             </tr>
-          </thead>
-          <tbody>
-            {transactions.length > 0 ? (
-              transactions.map((t, index) => (
-                <tr
-                  key={t.id}
-                  className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
-                >
-                  <td className="p-2 border">{t.description}</td>
-                  <td className="p-2 border">
-                    {new Date(t.transactionDate).toLocaleDateString()}
-                  </td>
-                  <td className="p-2 border">{t.points}</td>
-                  <td className="p-2 border">R$ {t.amount.toFixed(2)}</td>
-                  <td className="p-2 border">{t.status}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} className="text-center p-4">
-                  Nenhuma transação encontrada.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      )}
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
