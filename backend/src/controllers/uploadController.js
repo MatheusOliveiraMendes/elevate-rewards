@@ -20,13 +20,7 @@ exports.uploadSheet = async (req, res) => {
     for (const row of data) {
       console.log('📄 Linha da planilha:', row);
 
-      // Usando email como CPF, pois coluna "cpf" não existe no banco
-      const user = await User.findOne({ where: { email: row.CPF } });
-      if (!user) {
-        console.log(`⚠️ Usuário não encontrado para CPF/email: ${row.CPF}`);
-        continue;
-      }
-
+      // Insere mesmo que o usuário não exista
       entries.push({
         cpf: row.CPF,
         description: row['Descrição da transação'],
@@ -34,11 +28,11 @@ exports.uploadSheet = async (req, res) => {
         points: parseInt(row['Valor em pontos'].replace('.', '').replace(',', ''), 10),
         amount: parseFloat(row['Valor'].replace('.', '').replace(',', '.')),
         status: row.Status,
-        UserId: user.id,
+        UserId: null, // <- null temporariamente, para não bloquear o insert
       });
     }
 
-    console.log('✅ Transações para inserir:', entries.length);
+    console.log('✅ Transações para inserir (mesmo sem User):', entries.length);
     await Transaction.bulkCreate(entries);
     res.json({ message: 'Transações importadas com sucesso.' });
   } catch (err) {

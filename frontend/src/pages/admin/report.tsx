@@ -128,7 +128,7 @@ export default function ReportPage() {
               <td className="p-2 border">{t.description}</td>
               <td className="p-2 border">{new Date(t.transactionDate).toLocaleDateString()}</td>
               <td className="p-2 border">{t.points}</td>
-              <td className="p-2 border">R$ {t.amount.toFixed(2)}</td>
+              <td>R$ {Number(t.amount || 0).toFixed(2)}</td>
               <td className="p-2 border">{t.status}</td>
             </tr>
           ))}
