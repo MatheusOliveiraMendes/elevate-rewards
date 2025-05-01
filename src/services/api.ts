@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://nex-digital-challenge-backend.onrender.com//api',
+  baseURL: 'https://nex-digital-challenge-backend.onrender.com/api',
 });
 
 // Intercepta todas as requisições para adicionar o token se existir
