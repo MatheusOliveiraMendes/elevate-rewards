@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: 'https://nex-digital-challenge-backend.onrender.com/api',
 });
 
-// Intercepta todas as requisições para adicionar o token se existir
 api.interceptors.request.use((config) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   if (token && config.headers) {

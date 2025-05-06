@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import api from '../services/api'; 
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -17,7 +17,7 @@ export default function RegisterPage() {
         token: string;
       }
 
-      const response = await axios.post<RegisterResponse>('http://localhost:3001/api/auth/register', {
+      const response = await api.post<RegisterResponse>('/auth/register', {
         name,
         email,
         password,
