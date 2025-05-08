@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useRouter } from 'next/router';
+import api from '../services/api'; 
+import { jwtDecode } from 'jwt-decode';
 import withAuth from '../components/withAuth';
-import { jwtDecode }from 'jwt-decode';
-
 
 interface Transaction {
   id: number;
@@ -37,9 +36,7 @@ function DashboardPage() {
 
     const fetchTransactions = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get<Transaction[]>('http://localhost:3001/api/transactions/user', {
-          headers: { Authorization: `Bearer ${token}` },
+        const response = await api.get<Transaction[]>('/transactions/user', {
           params: {
             status: statusFilter || undefined,
             startDate: startDate || undefined,
@@ -51,6 +48,7 @@ function DashboardPage() {
         console.error('Erro ao buscar transações:', err);
       }
     };
+
     fetchTransactions();
   }, [statusFilter, startDate, endDate]);
 
