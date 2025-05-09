@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 export default function WalletPage() {
   const [balance, setBalance] = useState<number>(0);
 
   const fetchWallet = async () => {
     try {
-      const token = localStorage.getItem('token');
       interface WalletResponse {
         approvedPoints: number;
       }
 
-      const response = await axios.get<WalletResponse>('http://localhost:3001/api/wallet', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get<WalletResponse>('/wallet');
       setBalance(response.data.approvedPoints);
     } catch (err) {
       console.error('Erro ao buscar saldo da carteira', err);
