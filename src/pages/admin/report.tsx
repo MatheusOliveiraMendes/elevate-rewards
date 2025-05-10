@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 
 interface Transaction {
   id: number;
@@ -21,30 +21,32 @@ export default function ReportPage() {
   const [minAmount, setMinAmount] = useState('');
   const [maxAmount, setMaxAmount] = useState('');
 
-  const fetchReport = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get<Transaction[]>('http://localhost:3001/api/admin/report', {
-        headers: { Authorization: `Bearer ${token}` },
-        params: {
-          cpf: cpf || undefined,
-          product: product || undefined,
-          status: status || undefined,
-          startDate: startDate || undefined,
-          endDate: endDate || undefined,
-          minAmount: minAmount || undefined,
-          maxAmount: maxAmount || undefined,
-        },
-      });
-      setTransactions(response.data);
-    } catch (err) {
-      console.error('Erro ao buscar relatório', err);
-    }
-  };
-
   useEffect(() => {
+    const fetchReport = async () => {
+      try {
+        const response = await api.get<Transaction[]>('/admin/report', {
+          params: {
+            cpf: cpf || undefined,
+            product: product || undefined,
+            status: status || undefined,
+            startDate: startDate || undefined,
+            endDate: endDate || undefined,
+            minAmount: minAmount || undefined,
+            maxAmount: maxAmount || undefined,
+          },
+        });
+        setTransactions(response.data);
+      } catch (err) {
+        console.error('Erro ao buscar relatório', err);
+      }
+    };
+
     fetchReport();
-  }, []);
+  }, [cpf, product, status, startDate, endDate, minAmount, maxAmount]);
+
+  function fetchReport(): void {
+    throw new Error('Function not implemented.');
+  }
 
   return (
     <div className="p-8">
@@ -128,7 +130,7 @@ export default function ReportPage() {
               <td className="p-2 border">{t.description}</td>
               <td className="p-2 border">{new Date(t.transactionDate).toLocaleDateString()}</td>
               <td className="p-2 border">{t.points}</td>
-              <td>R$ {Number(t.amount || 0).toFixed(2)}</td>
+              <td className="p-2 border">R$ {Number(t.amount || 0).toFixed(2)}</td>
               <td className="p-2 border">{t.status}</td>
             </tr>
           ))}
