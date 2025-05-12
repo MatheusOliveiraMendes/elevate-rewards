@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../../services/api'; // ajuste o caminho se necessário
 import withAuth from '../../components/withAuth';
 import { useRouter } from 'next/router';
 
@@ -26,20 +26,19 @@ function UploadPage() {
     formData.append('file', file);
 
     try {
-      const token = localStorage.getItem('token');
       interface UploadResponse {
         message: string;
       }
 
-      const response = await axios.post<UploadResponse>('http://localhost:3001/api/upload', formData, {
+      const response = await api.post<UploadResponse>('/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
         },
       });
+
       setMessage(response.data.message);
       setFile(null);
-       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erro ao fazer upload');
     } finally {
