@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import api from '../../services/api'; // ajuste o caminho se necessário
 import withAuth from '../../components/withAuth';
-import { useRouter } from 'next/router';
 import AdminLayout from '../../components/AdminLayout';
+import AdminHeader from '../../components/AdminHeader';
 
 function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -47,24 +46,11 @@ function UploadPage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    router.push('/login');
-  };
 
   return (
     <AdminLayout>
+      <AdminHeader title="Upload de Planilha" />
       <div className="min-h-screen p-8 bg-gray-50">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Upload de Planilha</h1>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            Sair
-          </button>
-        </div>
-
         <div className="bg-white p-6 rounded shadow max-w-xl mx-auto">
           <input
             type="file"

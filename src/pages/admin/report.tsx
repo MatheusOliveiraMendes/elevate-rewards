@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import api from '../../services/api';
 import AdminLayout from '../../components/AdminLayout';
+import AdminHeader from '../../components/AdminHeader';
 
 interface Transaction {
   id: number;
@@ -71,11 +72,11 @@ function ReportPage() {
 
   return (
     <AdminLayout>
+      <AdminHeader title="Relatório de Transações" />
       <section className="bg-white py-8 md:py-16 min-h-screen">
         <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
           <div className="mx-auto max-w-5xl">
             <div className="gap-4 sm:flex sm:items-center sm:justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 sm:text-2xl">Relatório de Transações</h2>
               <div className="mt-6 gap-4 space-y-4 sm:mt-0 sm:flex sm:items-center sm:justify-end sm:space-y-0">
                 <div>
                   <label htmlFor="status-filter" className="sr-only mb-2 block text-sm font-medium text-gray-900">Status</label>
