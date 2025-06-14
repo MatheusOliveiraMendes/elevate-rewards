@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import api from '../services/api'; 
 import { jwtDecode } from 'jwt-decode';
 import withAuth from '../components/withAuth';
+import Header from '../components/Header';
 
 interface Transaction {
   id: number;
@@ -66,7 +67,9 @@ function DashboardPage() {
   };
 
   return (
-    <div className="p-8">
+    <>
+     <Header />
+    <div className="p-8"> 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Extrato de Transações</h1>
         <div className="flex gap-2">
@@ -137,6 +140,7 @@ function DashboardPage() {
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 
