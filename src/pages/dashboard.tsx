@@ -4,6 +4,7 @@ import api from '../services/api';
 import { jwtDecode } from 'jwt-decode';
 import withAuth from '../components/withAuth';
 import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 interface Transaction {
   id: number;
@@ -140,6 +141,7 @@ function DashboardPage() {
         </tbody>
       </table>
     </div>
+    <Footer />
     </>
   );
 }
