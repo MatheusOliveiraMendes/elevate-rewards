@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { isAxiosError } from 'axios';
 import api from '../services/api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -12,6 +11,19 @@ interface WalletResponse {
 }
 
 type TierKey = 'platinum' | 'gold' | 'silver' | 'bronze' | 'beginner';
+
+type AxiosErrorLike = {
+  isAxiosError: boolean;
+  response?: {
+    status?: number;
+  };
+};
+
+const isAxiosError = (error: unknown): error is AxiosErrorLike =>
+  typeof error === 'object' &&
+  error !== null &&
+  'isAxiosError' in error &&
+  (error as AxiosErrorLike).isAxiosError === true;
 
 function WalletPage() {
   const [balance, setBalance] = useState<number>(0);
