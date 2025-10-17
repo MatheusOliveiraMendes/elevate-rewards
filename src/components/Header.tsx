@@ -1,165 +1,303 @@
-import React, { useEffect, useState }from "react";
-import Image from "next/image";
-import { jwtDecode } from 'jwt-decode';
+import React, { useEffect, useId, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/router";
+import { useLocale } from "../context/LocaleContext";
 
 interface JwtPayload {
   id: string;
-  role: 'admin' | 'user';
+  role: "admin" | "user";
 }
 
+interface NavLink {
+  href: string;
+  label: string;
+}
 
 const Header: React.FC = () => {
   const router = useRouter();
-  const [userRole, setUserRole] = useState<'admin' | 'user' | null>(null);
-  const [error, setError] = useState('');
-  
-  
+  const [userRole, setUserRole] = useState<"admin" | "user" | null>(null);
+  const [errorKey, setErrorKey] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
+  const languageSelectorRef = useRef<HTMLDivElement | null>(null);
+  const { t, locale, setLocale } = useLocale();
 
-    useEffect(() => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        const decoded = jwtDecode<JwtPayload>(token);
-        setUserRole(decoded.role);
+  const navLinks: NavLink[] = useMemo(
+    () => [
+      { href: "/dashboard", label: t("header.nav.dashboard") },
+      { href: "/wallet", label: t("header.nav.wallet") },
+    ],
+    [t],
+  );
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const decoded = jwtDecode<JwtPayload>(token);
+      setUserRole(decoded.role);
+    } catch (decodeError) {
+      console.error("Erro ao decodificar token JWT", decodeError);
+      setErrorKey("header.error.session");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!errorKey) return;
+    const timer = setTimeout(() => setErrorKey(""), 4000);
+    return () => clearTimeout(timer);
+  }, [errorKey]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setLanguageMenuOpen(false);
+  }, [router.pathname]);
+
+  useEffect(() => {
+    if (!languageMenuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        languageSelectorRef.current &&
+        !languageSelectorRef.current.contains(event.target as Node)
+      ) {
+        setLanguageMenuOpen(false);
       }
-    }, []);
+    };
 
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [languageMenuOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     router.push("/login");
   };
 
- const handleAdminPanel = () => {
-    if (userRole === 'admin') {
-      router.push('/admin/dashboard');
-    } else {
-      setError('Você não tem permissão de administrador.');
-    }
+  const handleLocaleChange = (value: "en" | "pt" | "es") => {
+    setLocale(value);
+    setLanguageMenuOpen(false);
   };
 
-  return (
-    <header>
-      <nav className="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-gray-800">
-        <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
-          <Image
-            src="https://flowbite.com/docs/images/logo.svg"
-            className="mr-3 h-6 sm:h-9"
-            alt="Flowbite Logo"
-            width={36}
-            height={36}
-            priority
-          />
-          <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
-            Flowbite
-          </span>
-          <div className="flex items-center lg:order-2">
-            <button
-              onClick={handleLogout}
-              className="text-gray-800 dark:text-white hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
-            >
-              Log out
-            </button>
-            <button
-              onClick={handleAdminPanel}
-              className="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800"
-            >
-              Admin
-            </button>
-                  {error && <p className="text-red-600 mb-4">{error}</p>}
+  const languageSelectId = useId();
 
-            <button
-              data-collapse-toggle="mobile-menu-2"
-              type="button"
-              className="inline-flex items-center p-2 ml-1 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-              aria-controls="mobile-menu-2"
-              aria-expanded="false"
-            >
-              <span className="sr-only">Open main menu</span>
-              <svg
-                className="w-6 h-6"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-              <svg
-                className="hidden w-6 h-6"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-            </button>
-          </div>
-          <div
-            className="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
-            id="mobile-menu-2"
+  const languageOptions: Array<{ value: "en" | "pt" | "es"; label: string }> = useMemo(
+    () => [
+      { value: "en", label: t("language.option.en") },
+      { value: "pt", label: t("language.option.pt") },
+      { value: "es", label: t("language.option.es") },
+    ],
+    [t]
+  );
+
+  const languageSelector = (
+    <div
+      className="relative inline-flex text-xs font-semibold uppercase text-white"
+      ref={languageSelectorRef}
+    >
+      <button
+        type="button"
+        id={languageSelectId}
+        aria-haspopup="listbox"
+        aria-expanded={languageMenuOpen}
+        className="inline-flex h-10 items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 transition hover:border-white/30 hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+        onClick={() => setLanguageMenuOpen((open) => !open)}
+      >
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/10">
+          <svg
+            className="h-3.5 w-3.5"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.4}
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <ul className="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 pr-4 pl-3 text-white rounded bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:p-0 dark:text-white"
-                  aria-current="page"
+            <path d="M10 2a8 8 0 100 16 8 8 0 000-16z" />
+            <path d="M2 10h16" />
+            <path d="M10 2s3 3.5 3 8-3 8-3 8" />
+            <path d="M10 2s-3 3.5-3 8 3 8 3 8" />
+          </svg>
+        </span>
+        <span>{locale.toUpperCase()}</span>
+        <svg
+          className={`h-3 w-3 transition-transform ${languageMenuOpen ? "rotate-180" : ""}`}
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="M6 8l4 4 4-4" />
+        </svg>
+      </button>
+      {languageMenuOpen && (
+        <ul
+          className="absolute right-0 z-50 mt-2 w-28 rounded-xl border border-white/15 bg-slate-900/95 p-1 text-xs shadow-lg backdrop-blur-xl"
+          role="listbox"
+          aria-labelledby={languageSelectId}
+        >
+          {languageOptions.map((option) => (
+            <li key={option.value}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={locale === option.value}
+                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition hover:bg-white/10 ${
+                  locale === option.value ? "bg-white/10 text-white" : "text-slate-200"
+                }`}
+                onClick={() => handleLocaleChange(option.value)}
+              >
+                <span>{option.label}</span>
+                {locale === option.value && (
+                  <svg
+                    className="h-3 w-3 text-sky-300"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-6.364 6.364a1 1 0 01-1.414 0L5.293 9.414a1 1 0 011.414-1.414l2.828 2.829 5.657-5.657a1 1 0 011.415 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur-xl backdrop-saturate-150">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/20 text-lg font-bold text-sky-300 ring-1 ring-sky-500/30">
+            ER
+          </span>
+          <div>
+            <span className="block text-sm font-semibold uppercase tracking-widest text-slate-400">
+              {t("header.brand.tagline")}
+            </span>
+            <span className="block text-lg font-semibold text-white">
+              {t("header.brand.product")}
+            </span>
+          </div>
+        </Link>
+
+        <div className="hidden items-center gap-1 md:flex">
+          {navLinks.map((link) => {
+            const isActive =
+              router.pathname === link.href ||
+              router.pathname.startsWith(`${link.href}/`);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-white/15 text-white"
+                    : "text-slate-300 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="hidden items-center gap-2 md:flex">
+          {userRole === "admin" && (
+            <Link href="/admin/dashboard" className="secondary-button">
+              {t("header.nav.admin")}
+            </Link>
+          )}
+          <button onClick={handleLogout} className="primary-button">
+            {t("header.button.logout")}
+          </button>
+          <div className="ml-3">{languageSelector}</div>
+        </div>
+
+        <button
+          type="button"
+          aria-label="Open menu"
+          className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition-colors hover:border-white/30 hover:bg-white/10"
+          onClick={() => setMobileMenuOpen((open) => !open)}
+        >
+          <svg
+            className="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            {mobileMenuOpen ? (
+              <path d="M18 6L6 18M6 6l12 12" />
+            ) : (
+              <>
+                <path d="M4 12h16" />
+                <path d="M4 6h16" />
+                <path d="M4 18h16" />
+              </>
+            )}
+          </svg>
+        </button>
+      </nav>
+
+      {mobileMenuOpen && (
+        <div className="md:hidden">
+          <div className="mx-4 mb-4 space-y-2 rounded-3xl border border-white/10 bg-white/5 px-6 py-5 backdrop-blur-xl">
+            {navLinks.map((link) => {
+              const isActive =
+                router.pathname === link.href ||
+                router.pathname.startsWith(`${link.href}/`);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`block rounded-2xl px-3 py-2 text-base font-medium transition ${
+                    isActive
+                      ? "bg-white/15 text-white"
+                      : "text-slate-200 hover:bg-white/10 hover:text-white"
+                  }`}
                 >
-                  Home
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
-                >
-                  Company
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
-                >
-                  Marketplace
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
-                >
-                  Features
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
-                >
-                  Team
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
-                >
-                  Contact
-                </a>
-              </li>
-            </ul>
+                  {link.label}
+                </Link>
+              );
+            })}
+            {userRole === "admin" && (
+              <Link
+                href="/admin/dashboard"
+                className="block rounded-2xl bg-white/15 px-3 py-2 text-base font-semibold text-white transition hover:bg-white/25"
+              >
+                {t("header.nav.admin")}
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full rounded-2xl bg-sky-500/90 px-3 py-2 text-base font-semibold text-white transition hover:bg-sky-400"
+            >
+              {t("header.button.logout")}
+            </button>
+            <div className="flex justify-end pt-2">{languageSelector}</div>
           </div>
         </div>
-      </nav>
+      )}
+
+      {errorKey && (
+        <div className="mx-auto max-w-6xl px-6 pb-4 text-sm text-rose-300">
+          {t(errorKey)}
+        </div>
+      )}
     </header>
   );
 };

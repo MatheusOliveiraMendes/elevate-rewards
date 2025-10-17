@@ -1,13 +1,22 @@
-import React from 'react';
 import { useRouter } from 'next/router';
+import { useLocale } from '../context/LocaleContext';
 
 interface AdminHeaderProps {
   onLogout?: () => void;
   title?: string;
+  description?: string;
 }
 
-export default function AdminHeader({ onLogout, title = "Painel do Administrador" }: AdminHeaderProps) {
+export default function AdminHeader({
+  onLogout,
+  title,
+  description,
+}: AdminHeaderProps) {
   const router = useRouter();
+  const { t } = useLocale();
+
+  const resolvedTitle = title ?? t('admin.header.defaultTitle');
+  const resolvedDescription = description ?? t('admin.header.description');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -16,24 +25,34 @@ export default function AdminHeader({ onLogout, title = "Painel do Administrador
   };
 
   return (
-    <header>
-      <nav className="bg-gray-800 border-gray-200 px-4 lg:px-6 py-2.5">
-        <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
-          <div className="flex items-center">
-            <span className="self-center text-xl font-semibold whitespace-nowrap text-white">
-              {title}
-            </span>
-          </div>
-          <div className="flex items-center lg:order-2">
-            <button
-              onClick={handleLogout}
-              className="text-gray-800 dark:text-white hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800"
-            >
-              Log out
-            </button>
-          </div>
+    <header className="mb-10">
+      <div className="flex flex-col gap-6 rounded-3xl border border-white/10 bg-white/5 px-8 py-6 shadow-[0_20px_45px_-25px_rgba(56,189,248,0.35)] md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
+            {t('admin.header.section')}
+          </p>
+          <h1 className="mt-3 text-3xl font-semibold text-white md:text-4xl">
+            {resolvedTitle}
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm text-slate-300">{resolvedDescription}</p>
         </div>
-      </nav>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.push('/dashboard')}
+            className="secondary-button"
+          >
+            {t('admin.header.back')}
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="primary-button"
+          >
+            {t('admin.header.logout')}
+          </button>
+        </div>
+      </div>
     </header>
   );
 }

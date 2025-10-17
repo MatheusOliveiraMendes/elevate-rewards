@@ -1,2 +1,56 @@
 @import "tailwindcss";
 
+@layer base {
+  :root {
+    color-scheme: dark;
+    --brand-950: #080413;
+    --brand-900: #0f0b24;
+    --brand-800: #1a1537;
+    --brand-700: #221f47;
+    --brand-100: #f5f0ff;
+    --accent-primary: #f97316;
+    --accent-primary-hover: #ea580c;
+    --accent-secondary: #334155;
+    --accent-secondary-hover: #1e293b;
+    --danger-500: #fb7185;
+    --success-500: #4ade80;
+  }
+
+  body {
+    @apply min-h-screen bg-slate-950 text-slate-100 antialiased;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.22), transparent 52%),
+      radial-gradient(circle at 80% 10%, rgba(74, 222, 128, 0.16), transparent 48%),
+      radial-gradient(circle at 45% 80%, rgba(236, 72, 153, 0.12), transparent 55%),
+      linear-gradient(180deg, var(--brand-900), var(--brand-950));
+  }
+
+  a {
+    @apply text-orange-200 underline decoration-transparent transition-colors duration-200 ease-out;
+  }
+
+  a:hover {
+    @apply decoration-orange-200 text-orange-100;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-slate-100 font-semibold;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-[0_25px_65px_-45px_rgba(79,70,229,0.65)];
+  }
+
+  .primary-button {
+    @apply inline-flex items-center justify-center rounded-full bg-[var(--accent-primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-out hover:bg-[var(--accent-primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-200 active:scale-[0.98];
+  }
+
+  .secondary-button {
+    @apply inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-out hover:border-white/25 hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-200 active:scale-[0.98];
+  }
+}

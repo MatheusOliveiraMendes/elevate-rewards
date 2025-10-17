@@ -1,7 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import api from '../../services/api';
 import AdminLayout from '../../components/AdminLayout';
 import AdminHeader from '../../components/AdminHeader';
+import { useLocale } from '../../context/LocaleContext';
 
 interface Transaction {
   id: number;
@@ -13,7 +14,17 @@ interface Transaction {
   status: string;
 }
 
+const inputClass =
+  'w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30';
+
+const rawStatusOptions = [
+  { value: 'Aprovado', key: 'status.approved' },
+  { value: 'Reprovado', key: 'status.rejected' },
+  { value: 'Em avaliação', key: 'status.pending' },
+];
+
 function ReportPage() {
+  const { t } = useLocale();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [cpf, setCpf] = useState('');
   const [product, setProduct] = useState('');
@@ -23,8 +34,12 @@ function ReportPage() {
   const [minAmount, setMinAmount] = useState('');
   const [maxAmount, setMaxAmount] = useState('');
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-  const statusOptions = ["Aprovado", "Reprovado", "Em avaliação"];
   const statusDropdownRef = useRef<HTMLDivElement>(null);
+
+  const statusOptions = useMemo(
+    () => rawStatusOptions.map((option) => ({ ...option, label: t(option.key) })),
+    [t],
+  );
 
   const fetchReport = async () => {
     try {
@@ -41,7 +56,7 @@ function ReportPage() {
       });
       setTransactions(response.data);
     } catch (err) {
-      console.error('Erro ao buscar relatório', err);
+      console.error('Error fetching admin report', err);
     }
   };
 
@@ -59,177 +74,279 @@ function ReportPage() {
         setShowStatusDropdown(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  function statusColor(status: string) {
-    if (status === "Aprovado") return "bg-green-100 text-green-800";
-    if (status === "Reprovado") return "bg-red-100 text-red-800";
-    if (status === "Em avaliação") return "bg-yellow-100 text-yellow-800";
-    return "bg-gray-100 text-gray-800";
-  }
+  const statusClass = (value: string) => {
+    if (value === 'Aprovado') {
+      return 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-400/30';
+    }
+    if (value === 'Reprovado') {
+      return 'bg-rose-500/15 text-rose-300 ring-1 ring-rose-400/30';
+    }
+    if (value === 'Em avaliação') {
+      return 'bg-amber-500/15 text-amber-200 ring-1 ring-amber-400/30';
+    }
+    return 'bg-white/10 text-slate-200 ring-1 ring-white/20';
+  };
+
+  const totals = useMemo(() => {
+    return transactions.reduce(
+      (acc, transaction) => {
+        acc.total += 1;
+        acc.points += transaction.points;
+        acc.amount += transaction.amount;
+        return acc;
+      },
+      { total: 0, points: 0, amount: 0 },
+    );
+  }, [transactions]);
+
+  const summaryText = useMemo(() => {
+    return t('admin.report.results.summary')
+      .replace('{total}', totals.total.toString())
+      .replace('{points}', totals.points.toLocaleString('pt-BR'))
+      .replace(
+        '{amount}',
+        totals.amount.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+        }),
+      );
+  }, [t, totals]);
 
   return (
     <AdminLayout>
-      <AdminHeader title="Relatório de Transações" />
-      <section className="bg-white py-8 md:py-16 min-h-screen">
-        <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
-          <div className="mx-auto max-w-5xl">
-            <div className="gap-4 sm:flex sm:items-center sm:justify-between">
-              <div className="mt-6 gap-4 space-y-4 sm:mt-0 sm:flex sm:items-center sm:justify-end sm:space-y-0">
-                <div>
-                  <label htmlFor="status-filter" className="sr-only mb-2 block text-sm font-medium text-gray-900">Status</label>
-                  <div className="relative" ref={statusDropdownRef}>
-                    <button
-                      type="button"
-                      onClick={() => setShowStatusDropdown((v) => !v)}
-                      className="flex items-center justify-between w-full min-w-[8rem] rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                    >
-                      {status ? status : "Todos status"}
-                      <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {showStatusDropdown && (
-                      <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded shadow">
-                        <ul>
-                          <li>
-                            <button
-                              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${status === "" ? "font-bold" : ""}`}
-                              onClick={() => { setStatus(""); setShowStatusDropdown(false); }}
-                            >
-                              Todos
-                            </button>
-                          </li>
-                          {statusOptions.map((opt) => (
-                            <li key={opt}>
-                              <button
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${status === opt ? "font-bold" : ""}`}
-                                onClick={() => { setStatus(opt); setShowStatusDropdown(false); }}
-                              >
-                                {opt}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <span className="inline-block text-gray-500">de</span>
-                <div>
-                  <label htmlFor="start-date" className="sr-only mb-2 block text-sm font-medium text-gray-900">Data inicial</label>
-                  <input
-                    id="start-date"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  />
-                </div>
-                <span className="inline-block text-gray-500">até</span>
-                <div>
-                  <label htmlFor="end-date" className="sr-only mb-2 block text-sm font-medium text-gray-900">Data final</label>
-                  <input
-                    id="end-date"
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="cpf" className="sr-only mb-2 block text-sm font-medium text-gray-900">CPF</label>
-                  <input
-                    id="cpf"
-                    type="text"
-                    placeholder="CPF"
-                    value={cpf}
-                    onChange={(e) => setCpf(e.target.value)}
-                    className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="product" className="sr-only mb-2 block text-sm font-medium text-gray-900">Produto</label>
-                  <input
-                    id="product"
-                    type="text"
-                    placeholder="Produto"
-                    value={product}
-                    onChange={(e) => setProduct(e.target.value)}
-                    className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="minAmount" className="sr-only mb-2 block text-sm font-medium text-gray-900">Valor mín.</label>
-                  <input
-                    id="minAmount"
-                    type="number"
-                    placeholder="Valor mín."
-                    value={minAmount}
-                    onChange={(e) => setMinAmount(e.target.value)}
-                    className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="maxAmount" className="sr-only mb-2 block text-sm font-medium text-gray-900">Valor máx.</label>
-                  <input
-                    id="maxAmount"
-                    type="number"
-                    placeholder="Valor máx."
-                    value={maxAmount}
-                    onChange={(e) => setMaxAmount(e.target.value)}
-                    className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={fetchReport}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                >
-                  Filtrar
-                </button>
-              </div>
+      <AdminHeader />
+
+      <section className="grid gap-8">
+        <div className="glass-card px-8 py-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-white">{t('admin.report.filters.title')}</h2>
+              <p className="text-sm text-slate-300">
+                {t('admin.report.filters.subtitle')}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setCpf('');
+                  setProduct('');
+                  setStatus('');
+                  setStartDate('');
+                  setEndDate('');
+                  setMinAmount('');
+                  setMaxAmount('');
+                  fetchReport();
+                }}
+                className="rounded-2xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:border-white/30 hover:bg-white/10"
+              >
+                {t('admin.report.filters.clear')}
+              </button>
+              <button
+                type="button"
+                onClick={fetchReport}
+                className="primary-button px-5 py-2.5 text-sm"
+              >
+                {t('admin.report.filters.apply')}
+              </button>
             </div>
           </div>
 
-          <div className="mt-6 flow-root sm:mt-8">
-            <div className="divide-y divide-gray-200">
-              {transactions.length === 0 && (
-                <div className="py-8 text-center text-gray-400">Nenhuma transação encontrada.</div>
-              )}
-              {transactions.map((t) => (
-                <div key={t.id} className="flex flex-wrap items-center gap-y-4 py-6">
-                  <dl className="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
-                    <dt className="text-base font-medium text-gray-500">CPF:</dt>
-                    <dd className="mt-1.5 text-base font-semibold text-gray-900">{t.cpf}</dd>
-                  </dl>
-                  <dl className="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
-                    <dt className="text-base font-medium text-gray-500">Descrição:</dt>
-                    <dd className="mt-1.5 text-base font-semibold text-gray-900">{t.description}</dd>
-                  </dl>
-                  <dl className="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
-                    <dt className="text-base font-medium text-gray-500">Data:</dt>
-                    <dd className="mt-1.5 text-base font-semibold text-gray-900">{new Date(t.transactionDate).toLocaleDateString()}</dd>
-                  </dl>
-                  <dl className="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
-                    <dt className="text-base font-medium text-gray-500">Pontos:</dt>
-                    <dd className="mt-1.5 text-base font-semibold text-gray-900">{t.points}</dd>
-                  </dl>
-                  <dl className="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
-                    <dt className="text-base font-medium text-gray-500">Valor:</dt>
-                    <dd className="mt-1.5 text-base font-semibold text-gray-900">R$ {Number(t.amount || 0).toFixed(2)}</dd>
-                  </dl>
-                  <dl className="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
-                    <dt className="text-base font-medium text-gray-500">Status:</dt>
-                    <dd className={`me-2 mt-1.5 inline-flex items-center rounded px-2.5 py-0.5 text-xs font-medium ${statusColor(t.status)}`}>
-                      {t.status}
-                    </dd>
-                  </dl>
-                </div>
-              ))}
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div>
+              <label className="mb-2 block text-xs font-medium uppercase tracking-[0.3em] text-slate-400">
+                {t('admin.report.filters.status')}
+              </label>
+              <div className="relative" ref={statusDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowStatusDropdown((prev) => !prev)}
+                  className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
+                >
+                  {status ? statusOptions.find((opt) => opt.value === status)?.label : t('status.all')}
+                  <svg
+                    className="h-4 w-4"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.6}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 7l5 5 5-5" />
+                  </svg>
+                </button>
+                {showStatusDropdown && (
+                  <div className="absolute z-10 mt-2 w-full rounded-2xl border border-white/10 bg-slate-900/95 p-1 text-sm text-white shadow-xl backdrop-blur">
+                    <button
+                      type="button"
+                      className={`w-full rounded-xl px-4 py-2 text-left transition hover:bg-white/10 ${
+                        status === '' ? 'bg-white/10 font-semibold' : ''
+                      }`}
+                      onClick={() => {
+                        setStatus('');
+                        setShowStatusDropdown(false);
+                      }}
+                    >
+                      {t('status.all')}
+                    </button>
+                    {statusOptions.map((option) => (
+                      <button
+                        type="button"
+                        key={option.value}
+                        className={`w-full rounded-xl px-4 py-2 text-left transition hover:bg-white/10 ${
+                          status === option.value ? 'bg-white/10 font-semibold' : ''
+                        }`}
+                        onClick={() => {
+                          setStatus(option.value);
+                          setShowStatusDropdown(false);
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
+
+            <div>
+              <label className="mb-2 block text-xs font-medium uppercase tracking-[0.3em] text-slate-400">
+                {t('admin.report.filters.startDate')}
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium uppercase tracking-[0.3em] text-slate-400">
+                {t('admin.report.filters.endDate')}
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium uppercase tracking-[0.3em] text-slate-400">
+                {t('admin.report.filters.cpf')}
+              </label>
+              <input
+                type="text"
+                value={cpf}
+                onChange={(e) => setCpf(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium uppercase tracking-[0.3em] text-slate-400">
+                {t('admin.report.filters.product')}
+              </label>
+              <input
+                type="text"
+                value={product}
+                onChange={(e) => setProduct(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium uppercase tracking-[0.3em] text-slate-400">
+                {t('admin.report.filters.minAmount')}
+              </label>
+              <input
+                type="number"
+                value={minAmount}
+                onChange={(e) => setMinAmount(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium uppercase tracking-[0.3em] text-slate-400">
+                {t('admin.report.filters.maxAmount')}
+              </label>
+              <input
+                type="number"
+                value={maxAmount}
+                onChange={(e) => setMaxAmount(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-card px-8 py-6">
+          <div className="flex flex-col gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-white">
+                {t('admin.report.results.title')}
+              </h2>
+              <p className="text-sm text-slate-300">{summaryText}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 overflow-x-auto">
+            <table className="min-w-full divide-y divide-white/10 text-left text-sm text-slate-100">
+              <thead className="bg-white/5 text-xs font-semibold uppercase tracking-widest text-slate-300">
+                <tr>
+                  <th className="px-6 py-4">{t('admin.report.column.cpf')}</th>
+                  <th className="px-6 py-4">{t('admin.report.column.description')}</th>
+                  <th className="px-4 py-4">{t('admin.report.column.date')}</th>
+                  <th className="px-4 py-4 text-right">{t('admin.report.column.points')}</th>
+                  <th className="px-4 py-4 text-right">{t('admin.report.column.amount')}</th>
+                  <th className="px-4 py-4 text-right">{t('admin.report.column.status')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {transactions.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-6 py-12 text-center text-sm text-slate-300"
+                    >
+                      {t('admin.report.results.empty')}
+                    </td>
+                  </tr>
+                )}
+                {transactions.map((transaction) => (
+                  <tr key={transaction.id} className="transition hover:bg-white/5">
+                    <td className="px-6 py-4 font-medium tracking-wide">
+                      {transaction.cpf}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-200">
+                      {transaction.description}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-slate-300">
+                      {new Date(transaction.transactionDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-4 text-right font-semibold">
+                      {transaction.points.toLocaleString('pt-BR')}
+                    </td>
+                    <td className="px-4 py-4 text-right text-slate-200">
+                      {transaction.amount.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })}
+                    </td>
+                    <td className="px-4 py-4">
+                      <span
+                        className={`float-right inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusClass(transaction.status)}`}
+                      >
+                        {transaction.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
