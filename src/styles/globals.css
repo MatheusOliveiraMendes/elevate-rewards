@@ -8,8 +8,8 @@
     --brand-800: #1a1537;
     --brand-700: #221f47;
     --brand-100: #f5f0ff;
-    --accent-primary: #f97316;
-    --accent-primary-hover: #ea580c;
+    --accent-primary: #3b82f6;
+    --accent-primary-hover: #2563eb;
     --accent-secondary: #334155;
     --accent-secondary-hover: #1e293b;
     --danger-500: #fb7185;
@@ -19,18 +19,18 @@
   body {
     @apply min-h-screen bg-slate-950 text-slate-100 antialiased;
     background-image:
-      radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.22), transparent 52%),
+      radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.22), transparent 52%),
       radial-gradient(circle at 80% 10%, rgba(74, 222, 128, 0.16), transparent 48%),
       radial-gradient(circle at 45% 80%, rgba(236, 72, 153, 0.12), transparent 55%),
       linear-gradient(180deg, var(--brand-900), var(--brand-950));
   }
 
   a {
-    @apply text-orange-200 underline decoration-transparent transition-colors duration-200 ease-out;
+    @apply text-blue-200 underline decoration-transparent transition-colors duration-200 ease-out;
   }
 
   a:hover {
-    @apply decoration-orange-200 text-orange-100;
+    @apply decoration-blue-200 text-blue-100;
   }
 
   h1,
@@ -47,10 +47,10 @@
   }
 
   .primary-button {
-    @apply inline-flex items-center justify-center rounded-full bg-[var(--accent-primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-out hover:bg-[var(--accent-primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-200 active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-full bg-[var(--accent-primary)] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-out hover:bg-[var(--accent-primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-200 active:scale-[0.98];
   }
 
   .secondary-button {
-    @apply inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-out hover:border-white/25 hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-200 active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-out hover:border-white/25 hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-200 active:scale-[0.98];
   }
 }
