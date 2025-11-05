@@ -1,13 +1,8 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/router";
 import { useLocale } from "../context/LocaleContext";
-
-interface JwtPayload {
-  id: string;
-  role: "admin" | "user";
-}
+import { clearSession, getActiveSession } from "../services/authStorage";
 
 interface NavLink {
   href: string;
@@ -32,14 +27,13 @@ const Header: React.FC = () => {
   );
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
     try {
-      const decoded = jwtDecode<JwtPayload>(token);
-      setUserRole(decoded.role);
+      const session = getActiveSession();
+      if (session?.user) {
+        setUserRole(session.user.role);
+      }
     } catch (decodeError) {
-      console.error("Erro ao decodificar token JWT", decodeError);
+      console.error("Erro ao recuperar sessão do usuário", decodeError);
       setErrorKey("header.error.session");
     }
   }, []);
@@ -71,7 +65,7 @@ const Header: React.FC = () => {
   }, [languageMenuOpen]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    clearSession();
     router.push("/login");
   };
 
@@ -213,14 +207,14 @@ const Header: React.FC = () => {
         </div>
 
         <div className="hidden items-center gap-2 md:flex">
+          <button onClick={handleLogout} className="primary-button">
+            {t("header.button.logout")}
+          </button>
           {userRole === "admin" && (
             <Link href="/admin/dashboard" className="secondary-button">
               {t("header.nav.admin")}
             </Link>
           )}
-          <button onClick={handleLogout} className="primary-button">
-            {t("header.button.logout")}
-          </button>
           <div className="ml-3">{languageSelector}</div>
         </div>
 
@@ -273,21 +267,23 @@ const Header: React.FC = () => {
                 </Link>
               );
             })}
-            {userRole === "admin" && (
-              <Link
-                href="/admin/dashboard"
-                className="block rounded-2xl bg-white/15 px-3 py-2 text-base font-semibold text-white transition hover:bg-white/25"
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full rounded-2xl bg-sky-500/90 px-3 py-2 text-base font-semibold text-white transition hover:bg-sky-400 sm:w-auto"
               >
-                {t("header.nav.admin")}
-              </Link>
-            )}
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="w-full rounded-2xl bg-sky-500/90 px-3 py-2 text-base font-semibold text-white transition hover:bg-sky-400"
-            >
-              {t("header.button.logout")}
-            </button>
+                {t("header.button.logout")}
+              </button>
+              {userRole === "admin" && (
+                <Link
+                  href="/admin/dashboard"
+                  className="block rounded-2xl bg-white/15 px-3 py-2 text-base font-semibold text-white transition hover:bg-white/25 sm:w-auto"
+                >
+                  {t("header.nav.admin")}
+                </Link>
+              )}
+            </div>
             <div className="flex justify-end pt-2">{languageSelector}</div>
           </div>
         </div>

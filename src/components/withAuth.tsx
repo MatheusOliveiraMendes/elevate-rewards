@@ -1,6 +1,7 @@
 // frontend/components/withAuth.tsx
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { getActiveSession } from '../services/authStorage';
 
 const withAuth = (WrappedComponent: React.ComponentType) => {
   const Wrapper = (props: React.ComponentProps<typeof WrappedComponent>) => {
@@ -8,8 +9,8 @@ const withAuth = (WrappedComponent: React.ComponentType) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      const session = getActiveSession();
+      if (!session) {
         router.replace('/login');
       } else {
         setIsAuthenticated(true);

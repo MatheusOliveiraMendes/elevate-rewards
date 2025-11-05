@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import { useLocale } from '../context/LocaleContext';
+import { clearSession } from '../services/authStorage';
 
 interface AdminHeaderProps {
   onLogout?: () => void;
@@ -19,7 +20,7 @@ export default function AdminHeader({
   const resolvedDescription = description ?? t('admin.header.description');
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    clearSession();
     router.push('/login');
     if (onLogout) onLogout();
   };
