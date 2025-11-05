@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import api from '../services/api';
 import { useLocale } from '../context/LocaleContext';
-
-interface RegisterResponse {
-  token: string;
-}
+import { registerUser } from '../services/authStorage';
 
 const inputClass =
   'w-full rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 text-sm text-white placeholder:text-slate-400 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30';
@@ -24,18 +20,15 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      const response = await api.post<RegisterResponse>('/auth/register', {
-        name,
-        email,
-        password,
-      });
-
-      const { token } = response.data;
-      localStorage.setItem('token', token);
+      registerUser({ name, email, password });
       router.push('/dashboard');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      setError(err.response?.data?.message || t('auth.register.error'));
+      const message =
+        err instanceof Error
+          ? err.message
+          : err?.response?.data?.message || t('auth.register.error');
+      setError(message);
     }
   };
 

@@ -116,7 +116,7 @@ function DashboardPage() {
                 {t('dashboard.metrics.total')}
               </p>
               <p className="mt-3 text-4xl font-semibold text-white">
-                {totals.totalPoints.toLocaleString('pt-BR')}
+                {totals.totalPoints.toLocaleString('en-US')}
               </p>
               <p className="mt-2 text-sm text-slate-300">
                 {t('dashboard.metrics.total.desc')}
@@ -127,7 +127,7 @@ function DashboardPage() {
                 {t('dashboard.metrics.approved')}
               </p>
               <p className="mt-3 text-4xl font-semibold text-emerald-300">
-                {totals.approvedPoints.toLocaleString('pt-BR')}
+                {totals.approvedPoints.toLocaleString('en-US')}
               </p>
               <p className="mt-2 text-sm text-slate-300">
                 {t('dashboard.metrics.approved.desc')}
@@ -138,7 +138,7 @@ function DashboardPage() {
                 {t('dashboard.metrics.pending')}
               </p>
               <p className="mt-3 text-4xl font-semibold text-amber-200">
-                {totals.pendingPoints.toLocaleString('pt-BR')}
+                {totals.pendingPoints.toLocaleString('en-US')}
               </p>
               <p className="mt-2 text-sm text-slate-300">
                 {t('dashboard.metrics.pending.desc')}
@@ -149,9 +149,9 @@ function DashboardPage() {
                 {t('dashboard.metrics.amount')}
               </p>
               <p className="mt-3 text-4xl font-semibold text-white">
-                {totals.totalValue.toLocaleString('pt-BR', {
+                {totals.totalValue.toLocaleString('en-US', {
                   style: 'currency',
-                  currency: 'BRL',
+                  currency: 'USD',
                 })}
               </p>
               <p className="mt-2 text-sm text-slate-300">
@@ -284,12 +284,12 @@ function DashboardPage() {
                         {new Date(transaction.transactionDate).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-4 text-right font-semibold">
-                        {transaction.points.toLocaleString('pt-BR')}
+                        {transaction.points.toLocaleString('en-US')}
                       </td>
                       <td className="px-4 py-4 text-right text-slate-200">
-                        {transaction.amount.toLocaleString('pt-BR', {
+                        {transaction.amount.toLocaleString('en-US', {
                           style: 'currency',
-                          currency: 'BRL',
+                          currency: 'USD',
                         })}
                       </td>
                       <td className="px-4 py-4">

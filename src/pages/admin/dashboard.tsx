@@ -1,15 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import { jwtDecode } from 'jwt-decode';
 import withAuth from '../../components/withAuth';
 import AdminLayout from '../../components/AdminLayout';
 import AdminHeader from '../../components/AdminHeader';
 import { useLocale } from '../../context/LocaleContext';
-
-interface JwtPayload {
-  id: string;
-  role: 'admin' | 'user';
-}
+import { getActiveSession } from '../../services/authStorage';
 
 interface SummaryCard {
   title: string;
@@ -40,12 +35,18 @@ function AdminDashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decoded = jwtDecode<JwtPayload>(token);
-      setIsAdmin(decoded.role === 'admin');
+    try {
+      const session = getActiveSession();
+      if (session?.user.role === 'admin') {
+        setIsAdmin(true);
+      } else {
+        router.replace('/dashboard');
+      }
+    } catch (error) {
+      console.error('Erro ao recuperar sessão administrativa', error);
+      router.replace('/login');
     }
-  }, []);
+  }, [router]);
 
   const summaryCards: SummaryCard[] = useMemo(
     () => [

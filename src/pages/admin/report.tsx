@@ -106,12 +106,12 @@ function ReportPage() {
   const summaryText = useMemo(() => {
     return t('admin.report.results.summary')
       .replace('{total}', totals.total.toString())
-      .replace('{points}', totals.points.toLocaleString('pt-BR'))
+      .replace('{points}', totals.points.toLocaleString('en-US'))
       .replace(
         '{amount}',
-        totals.amount.toLocaleString('pt-BR', {
+        totals.amount.toLocaleString('en-US', {
           style: 'currency',
-          currency: 'BRL',
+          currency: 'USD',
         }),
       );
   }, [t, totals]);
@@ -328,12 +328,12 @@ function ReportPage() {
                       {new Date(transaction.transactionDate).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-4 text-right font-semibold">
-                      {transaction.points.toLocaleString('pt-BR')}
+                      {transaction.points.toLocaleString('en-US')}
                     </td>
                     <td className="px-4 py-4 text-right text-slate-200">
-                      {transaction.amount.toLocaleString('pt-BR', {
+                      {transaction.amount.toLocaleString('en-US', {
                         style: 'currency',
-                        currency: 'BRL',
+                        currency: 'USD',
                       })}
                     </td>
                     <td className="px-4 py-4">

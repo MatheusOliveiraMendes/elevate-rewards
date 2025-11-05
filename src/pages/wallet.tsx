@@ -135,7 +135,7 @@ function WalletPage() {
                 ) : (
                   <>
                     <span className="text-4xl font-semibold text-white">
-                      {balance.toLocaleString('pt-BR')} pts
+                      {balance.toLocaleString('en-US')} pts
                     </span>
                     <span className="text-sm text-slate-300">
                       {t('wallet.hero.caption')}
@@ -171,7 +171,7 @@ function WalletPage() {
                     <p className="mt-4 text-sm text-slate-300">
                       {t('wallet.metrics.remainingPrefix')}{' '}
                       <span className="font-semibold text-white">
-                        {pointsToNextTier.toLocaleString('pt-BR')}
+                        {pointsToNextTier.toLocaleString('en-US')}
                       </span>{' '}
                       {t('wallet.metrics.next')}{' '}
                       <span className="text-emerald-300">{nextTierLabel}</span>.
